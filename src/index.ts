@@ -47,6 +47,7 @@ export default {
 		await env.DB.batch(batchQ);
 	},
 	async fetch(request, env, ctx): Promise<Response> {
-		return new Response('Hello World!');
+		const heaers = request.headers.values();
+		return new Response(JSON.stringify(heaers), {headers: {"content-type": "application/json"}});
 	}
 } satisfies ExportedHandler<Env>;
