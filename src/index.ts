@@ -11,7 +11,7 @@
  * Learn more at https://developers.cloudflare.com/workers/
  */
 
-import {D1Database,KVNamespace} from "@cloudflare/workers-types";
+import { D1Database, KVNamespace } from "@cloudflare/workers-types";
 
 interface Env {
 	DB: D1Database;
@@ -35,7 +35,7 @@ export default {
 			created_date: string
 		}>();
 		//delete all daily rows 
-		const deleteQ =  env.DB.prepare('DELETE FROM usages WHERE created_date = ? AND category = ?').bind(nowDate, 'raw')
+		const deleteQ = env.DB.prepare('DELETE FROM usages WHERE created_date = ? AND category = ?').bind(nowDate, 'raw')
 		//batch insert
 		const batchQ = [];
 		for (const one of results) {
@@ -47,6 +47,11 @@ export default {
 		await env.DB.batch(batchQ);
 	},
 	async fetch(request, env, ctx): Promise<Response> {
-		return new Response(JSON.stringify(request.headers), {headers: {"content-type": "application/json"}});
+		const ip = request.headers.get('cf-connecting-ip') || request.headers.get('x-forwarded-for') ||
+			request.headers.get('x-real-ip') || request.headers.get('x-client-ip') || request.headers.get('x-remote-ip') ||
+			request.headers.get('x-originating-ip') || request.headers.get('x-remote-addr') || request.headers.get('x-remote-address') ||
+			request.headers.get('x-remote-host') || request.headers.get('x-remote-addr') || '';
+		const geo = request.headers.get('cf-ipcountry');
+		return new Response(JSON.stringify({ ip, geo }), { headers: { "content-type": "application/json" } });
 	}
 } satisfies ExportedHandler<Env>;
