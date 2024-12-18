@@ -35,7 +35,7 @@ export default {
 			created_date: string
 		}>();
 		//delete all daily rows
-		await env.DB.prepare('DELETE FROM usages WHERE created_date = ? AND category = ?').bind(nowDate, 'raw').run();
+		const deleteQ =  env.DB.prepare('DELETE FROM usages WHERE created_date = ? AND category = ?').bind(nowDate, 'raw')
 		//batch insert
 		const batchQ = [];
 		for (const one of results) {
@@ -43,6 +43,7 @@ export default {
 			const q2 = 'INSERT INTO usages (uid, kb, created_date, category) VALUES (?, ?, ?, ?)';
 			batchQ.push(env.DB.prepare(q2).bind(one.uid, one.total_kb, nowDate, 'daily'));
 		}
+		batchQ.push(deleteQ)
 		await env.DB.batch(batchQ);
 	},
 	async fetch(request, env, ctx): Promise<Response> {
