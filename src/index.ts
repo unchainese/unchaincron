@@ -34,7 +34,7 @@ export default {
 			total_kb: number,
 			created_date: string
 		}>();
-		//delete all daily rows
+		//delete all daily rows 
 		const deleteQ =  env.DB.prepare('DELETE FROM usages WHERE created_date = ? AND category = ?').bind(nowDate, 'raw')
 		//batch insert
 		const batchQ = [];
